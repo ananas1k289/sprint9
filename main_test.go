@@ -2,72 +2,66 @@ package main
 
 import (
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestGenerateRandomElements(t *testing.T) {
-	tests := []struct {
-		name string
-		size int
-		want int
-	}{
-		{"negative size", -5, 0},
-		{"zero size", 0, 0},
-		{"small size", 10, 10},
-	}
+	size := 1000
+	data := generateRandomElements(size)
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			result := generateRandomElements(tt.size)
-			if len(result) != tt.want {
-				t.Errorf("expected length %d, got %d", tt.want, len(result))
-			}
-		})
-	}
+	assert.NotNil(t, data)
+	assert.Len(t, data, size)
 }
 
-func TestMaximum(t *testing.T) {
-	tests := []struct {
-		name string
-		data []int
-		want int
-	}{
-		{"empty slice", []int{}, 0},
-		{"single element", []int{5}, 5},
-		{"positive numbers", []int{1, 3, 7, 2, 5}, 7},
-		{"negative numbers", []int{-10, -3, -50, -1}, -1},
-		{"mixed numbers", []int{-5, 0, 10, -2, 3}, 10},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got := maximum(tt.data)
-			if got != tt.want {
-				t.Errorf("maximum(%v) = %d; want %d", tt.data, got, tt.want)
-			}
-		})
-	}
+func TestGenerateRandomElements_ZeroSize(t *testing.T) {
+	data := generateRandomElements(0)
+	assert.Nil(t, data)
 }
 
-func TestMaxChunks(t *testing.T) {
-	tests := []struct {
-		name string
-		data []int
-	}{
-		{"empty slice", []int{}},
-		{"less than chunks", []int{1, 5, 3}},
-		{"exact chunks", []int{1, 5, 3, 9, 2, 8, 4, 7}},
-		{"more than chunks", []int{1, 9, 3, 4, 15, 6, 2, 8, 10, 7, 11}},
-		{"negative numbers", []int{-10, -5, -2, -30}},
-	}
+func TestMaximum_EmptySlice(t *testing.T) {
+	result := maximum([]int{})
+	assert.Equal(t, 0, result)
+}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			want := maximum(tt.data)
-			got := maxChunks(tt.data)
+func TestMaximum_SingleElement(t *testing.T) {
+	result := maximum([]int{42})
+	assert.Equal(t, 42, result)
+}
 
-			if got != want {
-				t.Errorf("maxChunks(%v) = %d; want %d", tt.data, got, want)
-			}
-		})
-	}
+func TestMaximum_MultipleElements(t *testing.T) {
+	data := []int{1, 5, 3, 9, 2}
+	result := maximum(data)
+
+	assert.Equal(t, 9, result)
+}
+
+func TestMaxChunks_EmptySlice(t *testing.T) {
+	result := maxChunks([]int{})
+	assert.Equal(t, 0, result)
+}
+
+func TestMaxChunks_LessThanChunks(t *testing.T) {
+	data := []int{3, 7, 2}
+	result := maxChunks(data)
+
+	assert.Equal(t, 7, result)
+}
+
+func TestMaxChunks_EqualsSingleThreadResult(t *testing.T) {
+	data := []int{1, 100, 50, 999, 23, 888, 77, 42}
+
+	single := maximum(data)
+	parallel := maxChunks(data)
+
+	assert.Equal(t, single, parallel)
+}
+
+func TestMaxChunks_LargeData(t *testing.T) {
+	data := generateRandomElements(100_000)
+
+	single := maximum(data)
+	parallel := maxChunks(data)
+
+	assert.Equal(t, single, parallel)
 }

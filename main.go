@@ -16,7 +16,7 @@ const (
 func generateRandomElements(size int) []int {
 
 	if size <= 0 {
-		return []int{}
+		return nil
 	}
 
 	r := rand.New(rand.NewSource(time.Now().Unix()))
@@ -45,8 +45,6 @@ func maximum(data []int) int {
 
 // maxChunks returns the maximum number of elements in a chunks.
 func maxChunks(data []int) int {
-	var wg sync.WaitGroup
-	wg.Add(CHUNKS)
 
 	if len(data) == 0 {
 		return 0
@@ -57,6 +55,9 @@ func maxChunks(data []int) int {
 	chunckSize := len(data) / CHUNKS
 	maxValues := make([]int, CHUNKS)
 
+	var wg sync.WaitGroup
+	wg.Add(CHUNKS)
+
 	for i := 0; i < CHUNKS; i++ {
 		rangeStart := i * chunckSize
 		rangeEnd := rangeStart + chunckSize
@@ -66,13 +67,7 @@ func maxChunks(data []int) int {
 
 		go func() {
 			defer wg.Done()
-			localMax := data[rangeStart]
-			for _, v := range data[rangeStart:rangeEnd] {
-				if v > localMax {
-					localMax = v
-				}
-			}
-			maxValues[i] = localMax
+			maxValues[i] = maximum(data[rangeStart:rangeEnd])
 		}()
 	}
 	wg.Wait()
